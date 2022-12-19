@@ -2,15 +2,17 @@ import pickle
 import os
 
 from pipeline import create_preprocessing_pipeline, create_feature_engineering_pipeline, create_ml_pipeline, prepare_submission
-from nodes import download_s3_train_data, uploud_s3_model
+from nodes import download_s3_train_data, uploud_s3_model, remove_data_dir
+
+ABS_PATH = os.path.abspath('')
 
 BUCKET_NAME = 'titanic-models-bucket' # replace with your bucket name
 KEY = 'data/'
 KEY_MODEL = 'models/'
 
-download_s3_train_data(BUCKET_NAME, KEY, "train.csv")
+download_s3_train_data(ABS_PATH, BUCKET_NAME, KEY, "train.csv")
 
-path = '/home/ec2-user/environment/ml_model/data'
+path = f'{ABS_PATH}/data'
 
 train_path = path.split('/')
 train_path.append('train.csv')
@@ -36,7 +38,9 @@ print('Model trained successfully, acc: ', training_acc)
 
 pickle.dump(model, open(f'dt_classifier_acc_{round(training_acc)}', 'wb'))
 
-uploud_s3_model(BUCKET_NAME, KEY_MODEL)
+uploud_s3_model(ABS_PATH, BUCKET_NAME, KEY_MODEL)
+
+remove_data_dir(path)
 
 #submission_df = prepare_submission(model, test_path, submission_path)
 #submission_df.head()
